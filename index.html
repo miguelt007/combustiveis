@@ -14,8 +14,24 @@
     }
 
     h1 {
-      margin: 20px;
-      font-size: 26px;
+      margin: 20px 10px 5px;
+    }
+
+    #update {
+      font-size: 14px;
+      opacity: 0.7;
+      margin-bottom: 10px;
+    }
+
+    button {
+      background: #38bdf8;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 10px;
+      color: black;
+      font-weight: bold;
+      cursor: pointer;
+      margin-bottom: 15px;
     }
 
     #container {
@@ -29,7 +45,8 @@
       margin: 10px;
       padding: 20px;
       border-radius: 16px;
-      background: #1e293b;
+      background: rgba(30, 41, 59, 0.7);
+      backdrop-filter: blur(10px);
       box-shadow: 0 6px 20px rgba(0,0,0,0.4);
       transition: 0.2s;
     }
@@ -40,13 +57,13 @@
 
     .icon {
       font-size: 40px;
-      margin-bottom: 10px;
     }
 
     .price {
-      font-size: 22px;
+      font-size: 24px;
       font-weight: bold;
       margin: 10px 0;
+      color: #38bdf8;
     }
 
     .minmax {
@@ -54,39 +71,36 @@
       opacity: 0.8;
     }
 
-    /* CORES POR TIPO */
     .gasolina { border-top: 4px solid #facc15; }
     .gasoleo { border-top: 4px solid #38bdf8; }
     .biodiesel { border-top: 4px solid #4ade80; }
     .outro { border-top: 4px solid #a78bfa; }
 
     #status {
-      margin-top: 10px;
+      margin: 10px;
       opacity: 0.7;
     }
   </style>
 </head>
 <body>
 
-<h1>⛽ Preços de Combustíveis</h1>
+<h1>⛽ Combustíveis</h1>
+<div id="update"></div>
+<button onclick="carregarDados()">🔄 Atualizar</button>
 <div id="status">A carregar...</div>
 <div id="container"></div>
 
 <script>
 const API_URL = "https://corsproxy.io/?https://api.apiaberta.pt/v1/fuel/prices";
 
-// Detectar tipo de combustível
 function getTipo(nome) {
   nome = nome.toLowerCase();
-
   if (nome.includes("gasolina")) return "gasolina";
   if (nome.includes("gasóleo") || nome.includes("gasoleo")) return "gasoleo";
   if (nome.includes("biodiesel")) return "biodiesel";
-
   return "outro";
 }
 
-// Ícones por tipo
 function getIcon(tipo) {
   switch (tipo) {
     case "gasolina": return "⛽";
@@ -96,27 +110,35 @@ function getIcon(tipo) {
   }
 }
 
+function formatarData(dataISO) {
+  const data = new Date(dataISO);
+  return data.toLocaleString("pt-PT");
+}
+
 async function carregarDados() {
   const status = document.getElementById("status");
   const container = document.getElementById("container");
+  const update = document.getElementById("update");
+
+  status.innerHTML = "A carregar...";
+  container.innerHTML = "";
 
   try {
     const res = await fetch(API_URL);
     const dados = await res.json();
 
     const lista = (dados.data || dados)
-      .filter(item => item.road_vehicle); // só carros
+      .filter(item => item.road_vehicle);
+
+    // pegar data da API (primeiro item)
+    if (lista.length > 0) {
+      update.innerHTML = "📅 Atualizado em: " + formatarData(lista[0].updated_at);
+    }
 
     status.innerHTML = "";
-    container.innerHTML = "";
 
     lista.forEach(item => {
-      const nome = item.fuel_name;
-      const preco = item.avg_price_eur;
-      const min = item.min_price_eur;
-      const max = item.max_price_eur;
-
-      const tipo = getTipo(nome);
+      const tipo = getTipo(item.fuel_name);
       const icon = getIcon(tipo);
 
       const div = document.createElement("div");
@@ -124,9 +146,11 @@ async function carregarDados() {
 
       div.innerHTML = `
         <div class="icon">${icon}</div>
-        <h2>${nome}</h2>
-        <div class="price">${preco} €</div>
-        <div class="minmax">Min: ${min} € | Máx: ${max} €</div>
+        <h2>${item.fuel_name}</h2>
+        <div class="price">${item.avg_price_eur} €</div>
+        <div class="minmax">
+          Min: ${item.min_price_eur} € | Máx: ${item.max_price_eur} €
+        </div>
       `;
 
       container.appendChild(div);
@@ -137,6 +161,7 @@ async function carregarDados() {
   }
 }
 
+// carregar ao abrir
 carregarDados();
 </script>
 
