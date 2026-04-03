@@ -75,13 +75,11 @@
       opacity: 0.7;
     }
 
-    /* 📊 ÁREA DOS GRÁFICOS (MAIOR QUE OS CARDS) */
+    /* 📊 GRÁFICO GRANDE */
     #charts {
       width: 100%;
       display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 40px;
+      justify-content: center;
       margin-top: 40px;
       padding-bottom: 60px;
     }
@@ -110,7 +108,6 @@
 
 <div id="charts">
   <canvas id="graficoAtual"></canvas>
-  <canvas id="graficoHistorico"></canvas>
 </div>
 
 <script>
@@ -118,9 +115,11 @@ const API_URL = "https://corsproxy.io/?https://api.apiaberta.pt/v1/fuel/prices";
 
 function getIcon(nome) {
   nome = nome.toLowerCase();
+
   if (nome.includes("gasolina")) return "⛽";
   if (nome.includes("gasóleo") || nome.includes("gasoleo")) return "🚗";
   if (nome.includes("biodiesel")) return "🌱";
+
   return "⛽";
 }
 
@@ -129,7 +128,6 @@ function formatarData(dataISO) {
 }
 
 let chartAtual;
-let chartHistorico;
 
 async function carregarDados() {
   const status = document.getElementById("status");
@@ -155,9 +153,6 @@ async function carregarDados() {
     const avgData = [];
     const maxData = [];
 
-    const histLabels = ["-4", "-3", "-2", "-1", "Hoje"];
-    const histDatasets = [];
-
     lista.forEach(item => {
       labels.push(item.fuel_name);
       minData.push(item.min_price_eur);
@@ -180,29 +175,13 @@ async function carregarDados() {
       `;
 
       container.appendChild(div);
-
-      const base = item.avg_price_eur;
-
-      histDatasets.push({
-        label: item.fuel_name,
-        data: [
-          base - 0.05,
-          base - 0.03,
-          base - 0.02,
-          base - 0.01,
-          base
-        ],
-        borderWidth: 3,
-        fill: false
-      });
     });
 
-    // 📊 GRÁFICO ATUAL (GRANDE)
     if (chartAtual) chartAtual.destroy();
 
-    const ctx1 = document.getElementById("graficoAtual").getContext("2d");
+    const ctx = document.getElementById("graficoAtual").getContext("2d");
 
-    chartAtual = new Chart(ctx1, {
+    chartAtual = new Chart(ctx, {
       type: "bar",
       data: {
         labels,
@@ -223,30 +202,6 @@ async function carregarDados() {
             backgroundColor: "#f87171"
           }
         ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { labels: { color: "white" } }
-        },
-        scales: {
-          x: { ticks: { color: "white" } },
-          y: { ticks: { color: "white" } }
-        }
-      }
-    });
-
-    // 📈 GRÁFICO HISTÓRICO (GRANDE)
-    if (chartHistorico) chartHistorico.destroy();
-
-    const ctx2 = document.getElementById("graficoHistorico").getContext("2d");
-
-    chartHistorico = new Chart(ctx2, {
-      type: "line",
-      data: {
-        labels: histLabels,
-        datasets: histDatasets
       },
       options: {
         responsive: true,
