@@ -2,7 +2,9 @@
 <html lang="pt">
 <head>
   <meta charset="UTF-8">
-  <title>Combustíveis</title>
+  <title>Combustíveis Dashboard</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
     body {
@@ -41,104 +43,67 @@
     }
 
     .card {
-      width: 260px;
+      width: 280px;
       margin: 10px;
       padding: 20px;
       border-radius: 16px;
       background: rgba(30, 41, 59, 0.7);
       backdrop-filter: blur(10px);
       box-shadow: 0 6px 20px rgba(0,0,0,0.4);
-      transition: 0.2s;
-    }
-
-    .card:hover {
-      transform: scale(1.05);
     }
 
     .icon {
       font-size: 40px;
     }
 
-    h2 {
-      font-size: 18px;
-    }
-
     .price {
       font-size: 24px;
       font-weight: bold;
       margin: 10px 0;
-    }
-
-    .minmax {
-      font-size: 14px;
-      opacity: 0.9;
-    }
-
-    .min {
-      color: #4ade80;
-    }
-
-    .max {
-      color: #f87171;
-    }
-
-    .price-low {
-      color: #4ade80;
-    }
-
-    .price-high {
-      color: #f87171;
-    }
-
-    .price-mid {
       color: #38bdf8;
     }
 
-    .gasolina { border-top: 4px solid #facc15; }
-    .gasoleo { border-top: 4px solid #38bdf8; }
-    .biodiesel { border-top: 4px solid #4ade80; }
-    .outro { border-top: 4px solid #a78bfa; }
+    .min { color: #4ade80; }
+    .max { color: #f87171; }
 
-    #status {
-      margin: 10px;
-      opacity: 0.7;
+    canvas {
+      margin: 10px auto 40px;
+      max-width: 900px;
     }
   </style>
 </head>
 
 <body>
 
-<h1>⛽ Combustíveis</h1>
+<h1>⛽ Combustíveis Dashboard</h1>
 
 <div id="update"></div>
 <button onclick="carregarDados()">🔄 Atualizar</button>
-<div id="status">A carregar...</div>
 
+<div id="status">A carregar...</div>
 <div id="container"></div>
+
+<canvas id="grafico" height="120"></canvas>
 
 <script>
 const API_URL = "https://corsproxy.io/?https://api.apiaberta.pt/v1/fuel/prices";
 
-function getTipo(nome) {
+function getIcon(nome) {
   nome = nome.toLowerCase();
-  if (nome.includes("gasolina")) return "gasolina";
-  if (nome.includes("gasóleo") || nome.includes("gasoleo")) return "gasoleo";
-  if (nome.includes("biodiesel")) return "biodiesel";
-  return "outro";
-}
 
-function getIcon(tipo) {
-  switch (tipo) {
-    case "gasolina": return "⛽";
-    case "gasoleo": return "🚛";
-    case "biodiesel": return "🌱";
-    default: return "🔋";
-  }
+  if (nome.includes("gasolina")) return "⛽";
+  if (nome.includes("gasóleo") || nome.includes("gasoleo")) return "🚛";
+  if (nome.includes("biodiesel")) return "🌱";
+  if (nome.includes("gás") || nome.includes("gas") || nome.includes("gpl")) return "🧯";
+
+  return "⛽";
 }
 
 function formatarData(dataISO) {
   return new Date(dataISO).toLocaleString("pt-PT");
 }
+
+let chart;
 
 async function carregarDados() {
   const status = document.getElementById("status");
@@ -161,49 +126,83 @@ async function carregarDados() {
 
     status.innerHTML = "";
 
+    // 👉 GRÁFICO
+    const labels = [];
+    const minData = [];
+    const avgData = [];
+    const maxData = [];
+
     lista.forEach(item => {
-
-      const nome = item.fuel_name;
-      const avg = item.avg_price_eur;
-      const min = item.min_price_eur;
-      const max = item.max_price_eur;
-
-      const tipo = getTipo(nome);
-      const icon = getIcon(tipo);
-
-      let classePreco = "price-mid";
-      let iconPreco = "⚖️";
-
-      if (avg <= min + 0.02) {
-        classePreco = "price-low";
-        iconPreco = "📉";
-      } else if (avg >= max - 0.02) {
-        classePreco = "price-high";
-        iconPreco = "📈";
-      }
+      labels.push(item.fuel_name);
+      minData.push(item.min_price_eur);
+      avgData.push(item.avg_price_eur);
+      maxData.push(item.max_price_eur);
 
       const div = document.createElement("div");
-      div.className = "card " + tipo;
+      div.className = "card";
 
       div.innerHTML = `
-        <div class="icon">${icon}</div>
-        <h2>${nome}</h2>
+        <div class="icon">${getIcon(item.fuel_name)}</div>
+        <h3>${item.fuel_name}</h3>
 
-        <div class="price ${classePreco}">
-          ${iconPreco} ${avg} €
-        </div>
+        <div class="price">⚖️ ${item.avg_price_eur} €</div>
 
-        <div class="minmax">
-          <span class="min">Min: ${min} €</span> |
-          <span class="max">Máx: ${max} €</span>
+        <div>
+          <span class="min">Min: ${item.min_price_eur} €</span> |
+          <span class="max">Máx: ${item.max_price_eur} €</span>
         </div>
       `;
 
       container.appendChild(div);
     });
 
+    // destruir gráfico antigo
+    if (chart) chart.destroy();
+
+    const ctx = document.getElementById("grafico").getContext("2d");
+
+    chart = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: "Mínimo",
+            data: minData
+          },
+          {
+            label: "Média",
+            data: avgData
+          },
+          {
+            label: "Máximo",
+            data: maxData
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            labels: {
+              color: "white"
+            }
+          }
+        },
+        scales: {
+          x: {
+            ticks: { color: "white" }
+          },
+          y: {
+            ticks: { color: "white" }
+          }
+        }
+      }
+    });
+
   } catch (e) {
     status.innerHTML = "Erro ao carregar dados 😢";
+    console.error(e);
   }
 }
 
