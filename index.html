@@ -148,12 +148,13 @@ function setTheme(theme) {
 function toggleTheme() {
   const current = document.body.classList.contains("dark") ? "dark" : "light";
   setTheme(current === "dark" ? "light" : "dark");
+  carregarDados(); // 🔥 RECARREGA GRÁFICO AO MUDAR TEMA
 }
 
 setTheme(localStorage.getItem("theme") || "dark");
 
 /* =========================
-   🎨 SVG ICONS NOVOS
+   🎨 SVG ICONS
 ========================= */
 
 function iconGasolina() {
@@ -223,6 +224,10 @@ function formatarData(dataISO) {
 
 let chartAtual;
 
+function corTexto() {
+  return document.body.classList.contains("dark") ? "#ffffff" : "#111111";
+}
+
 async function carregarDados() {
   const status = document.getElementById("status");
   const container = document.getElementById("container");
@@ -287,11 +292,29 @@ async function carregarDados() {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-          legend: { labels: { color: getComputedStyle(document.body).color } }
+          legend: {
+            labels: {
+              color: corTexto()
+            }
+          }
         },
         scales: {
-          x: { ticks: { color: getComputedStyle(document.body).color } },
-          y: { ticks: { color: getComputedStyle(document.body).color } }
+          x: {
+            ticks: { color: corTexto() },
+            grid: {
+              color: document.body.classList.contains("dark")
+                ? "rgba(255,255,255,0.1)"
+                : "rgba(0,0,0,0.1)"
+            }
+          },
+          y: {
+            ticks: { color: corTexto() },
+            grid: {
+              color: document.body.classList.contains("dark")
+                ? "rgba(255,255,255,0.1)"
+                : "rgba(0,0,0,0.1)"
+            }
+          }
         }
       }
     });
