@@ -88,13 +88,13 @@
 <script>
 const API_URL = "https://corsproxy.io/?https://api.apiaberta.pt/v1/fuel/prices";
 
+// Ícones corretos
 function getIcon(nome) {
   nome = nome.toLowerCase();
 
   if (nome.includes("gasolina")) return "⛽";
-  if (nome.includes("gasóleo") || nome.includes("gasoleo")) return "🚛";
+  if (nome.includes("gasóleo") || nome.includes("gasoleo")) return "🚗";
   if (nome.includes("biodiesel")) return "🌱";
-  if (nome.includes("gás") || nome.includes("gas") || nome.includes("gpl")) return "🧯";
 
   return "⛽";
 }
@@ -126,7 +126,6 @@ async function carregarDados() {
 
     status.innerHTML = "";
 
-    // 👉 GRÁFICO
     const labels = [];
     const minData = [];
     const avgData = [];
@@ -145,7 +144,7 @@ async function carregarDados() {
         <div class="icon">${getIcon(item.fuel_name)}</div>
         <h3>${item.fuel_name}</h3>
 
-        <div class="price">⚖️ ${item.avg_price_eur} €</div>
+        <div class="price">💰 ${item.avg_price_eur} €</div>
 
         <div>
           <span class="min">Min: ${item.min_price_eur} €</span> |
@@ -156,7 +155,6 @@ async function carregarDados() {
       container.appendChild(div);
     });
 
-    // destruir gráfico antigo
     if (chart) chart.destroy();
 
     const ctx = document.getElementById("grafico").getContext("2d");
@@ -168,15 +166,18 @@ async function carregarDados() {
         datasets: [
           {
             label: "Mínimo",
-            data: minData
+            data: minData,
+            backgroundColor: "#4ade80"
           },
           {
             label: "Média",
-            data: avgData
+            data: avgData,
+            backgroundColor: "#facc15"
           },
           {
             label: "Máximo",
-            data: maxData
+            data: maxData,
+            backgroundColor: "#f87171"
           }
         ]
       },
