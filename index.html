@@ -7,10 +7,6 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
-    /* =========================
-       🎨 THEME SYSTEM
-    ========================= */
-
     body {
       margin: 0;
       font-family: Arial;
@@ -88,8 +84,8 @@
     }
 
     .icon {
-      width: 46px;
-      height: 46px;
+      width: 52px;
+      height: 52px;
       margin: 0 auto 10px;
     }
 
@@ -141,7 +137,7 @@
 const API_URL = "https://corsproxy.io/?https://api.apiaberta.pt/v1/fuel/prices";
 
 /* =========================
-   🌙 THEME SYSTEM
+   🌙 THEME
 ========================= */
 
 function setTheme(theme) {
@@ -154,27 +150,57 @@ function toggleTheme() {
   setTheme(current === "dark" ? "light" : "dark");
 }
 
-// carregar tema guardado
 setTheme(localStorage.getItem("theme") || "dark");
 
 /* =========================
-   🎨 SVG ICONS (mantidos simples)
+   🎨 SVG ICONS NOVOS
 ========================= */
 
 function iconGasolina() {
-  return `<svg viewBox="0 0 64 64"><rect x="20" y="10" width="24" height="44" stroke="currentColor" stroke-width="3"/></svg>`;
+  return `
+  <svg viewBox="0 0 64 64">
+    <rect x="18" y="10" width="24" height="44" rx="4" fill="#1f2937"/>
+    <rect x="22" y="18" width="16" height="6" fill="#38bdf8"/>
+    <rect x="22" y="28" width="16" height="6" fill="#38bdf8"/>
+    <rect x="22" y="38" width="16" height="6" fill="#38bdf8"/>
+    <rect x="42" y="14" width="6" height="28" rx="2" fill="#374151"/>
+  </svg>`;
 }
 
 function iconGasoleo() {
-  return `<svg viewBox="0 0 64 64"><rect x="18" y="10" width="28" height="44" stroke="currentColor" stroke-width="3"/></svg>`;
+  return `
+  <svg viewBox="0 0 64 64">
+    <rect x="16" y="10" width="32" height="44" rx="6" fill="#111827"/>
+    <circle cx="32" cy="30" r="10" fill="#facc15"/>
+  </svg>`;
+}
+
+function iconBiodiesel() {
+  return `
+  <svg viewBox="0 0 64 64">
+    <path d="M32 8c10 10 16 18 16 28a16 16 0 1 1-32 0c0-10 6-18 16-28z"
+      fill="#16a34a"/>
+    <path d="M24 38c6-6 10-6 16 0" stroke="white" stroke-width="3"/>
+  </svg>`;
 }
 
 function iconGNC() {
-  return `<svg viewBox="0 0 64 64"><rect x="20" y="14" width="24" height="36" stroke="currentColor" stroke-width="3"/></svg>`;
+  return `
+  <svg viewBox="0 0 64 64">
+    <rect x="20" y="10" width="24" height="44" rx="6" fill="#0f172a"/>
+    <rect x="24" y="18" width="16" height="6" fill="#38bdf8"/>
+    <rect x="24" y="28" width="16" height="6" fill="#38bdf8"/>
+    <circle cx="32" cy="50" r="3" fill="#60a5fa"/>
+  </svg>`;
 }
 
 function iconGNL() {
-  return `<svg viewBox="0 0 64 64"><path d="M32 8c8 12 14 20 14 28a14 14 0 1 1-28 0c0-8 6-16 14-28z" stroke="currentColor" stroke-width="3"/></svg>`;
+  return `
+  <svg viewBox="0 0 64 64">
+    <path d="M32 6c8 12 16 20 16 30a16 16 0 1 1-32 0c0-10 8-18 16-30z"
+      fill="#06b6d4"/>
+    <path d="M22 40c6 6 14 6 20 0" stroke="white" stroke-width="3"/>
+  </svg>`;
 }
 
 function getIcon(nome) {
@@ -182,11 +208,14 @@ function getIcon(nome) {
 
   if (nome.includes("gasolina")) return iconGasolina();
   if (nome.includes("gasóleo") || nome.includes("gasoleo")) return iconGasoleo();
+  if (nome.includes("biodiesel")) return iconBiodiesel();
   if (nome.includes("gnc")) return iconGNC();
   if (nome.includes("gnl")) return iconGNL();
 
   return iconGasolina();
 }
+
+/* ========================= */
 
 function formatarData(dataISO) {
   return new Date(dataISO).toLocaleString("pt-PT");
