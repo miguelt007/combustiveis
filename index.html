@@ -59,16 +59,39 @@
       font-size: 40px;
     }
 
+    h2 {
+      font-size: 18px;
+    }
+
     .price {
       font-size: 24px;
       font-weight: bold;
       margin: 10px 0;
-      color: #38bdf8;
     }
 
     .minmax {
       font-size: 14px;
-      opacity: 0.8;
+      opacity: 0.9;
+    }
+
+    .min {
+      color: #4ade80;
+    }
+
+    .max {
+      color: #f87171;
+    }
+
+    .price-low {
+      color: #4ade80;
+    }
+
+    .price-high {
+      color: #f87171;
+    }
+
+    .price-mid {
+      color: #38bdf8;
     }
 
     .gasolina { border-top: 4px solid #facc15; }
@@ -82,12 +105,15 @@
     }
   </style>
 </head>
+
 <body>
 
 <h1>⛽ Combustíveis</h1>
+
 <div id="update"></div>
 <button onclick="carregarDados()">🔄 Atualizar</button>
 <div id="status">A carregar...</div>
+
 <div id="container"></div>
 
 <script>
@@ -111,8 +137,7 @@ function getIcon(tipo) {
 }
 
 function formatarData(dataISO) {
-  const data = new Date(dataISO);
-  return data.toLocaleString("pt-PT");
+  return new Date(dataISO).toLocaleString("pt-PT");
 }
 
 async function carregarDados() {
@@ -130,7 +155,6 @@ async function carregarDados() {
     const lista = (dados.data || dados)
       .filter(item => item.road_vehicle);
 
-    // pegar data da API (primeiro item)
     if (lista.length > 0) {
       update.innerHTML = "📅 Atualizado em: " + formatarData(lista[0].updated_at);
     }
@@ -138,18 +162,40 @@ async function carregarDados() {
     status.innerHTML = "";
 
     lista.forEach(item => {
-      const tipo = getTipo(item.fuel_name);
+
+      const nome = item.fuel_name;
+      const avg = item.avg_price_eur;
+      const min = item.min_price_eur;
+      const max = item.max_price_eur;
+
+      const tipo = getTipo(nome);
       const icon = getIcon(tipo);
+
+      let classePreco = "price-mid";
+      let iconPreco = "⚖️";
+
+      if (avg <= min + 0.02) {
+        classePreco = "price-low";
+        iconPreco = "📉";
+      } else if (avg >= max - 0.02) {
+        classePreco = "price-high";
+        iconPreco = "📈";
+      }
 
       const div = document.createElement("div");
       div.className = "card " + tipo;
 
       div.innerHTML = `
         <div class="icon">${icon}</div>
-        <h2>${item.fuel_name}</h2>
-        <div class="price">${item.avg_price_eur} €</div>
+        <h2>${nome}</h2>
+
+        <div class="price ${classePreco}">
+          ${iconPreco} ${avg} €
+        </div>
+
         <div class="minmax">
-          Min: ${item.min_price_eur} € | Máx: ${item.max_price_eur} €
+          <span class="min">Min: ${min} €</span> |
+          <span class="max">Máx: ${max} €</span>
         </div>
       `;
 
@@ -161,7 +207,6 @@ async function carregarDados() {
   }
 }
 
-// carregar ao abrir
 carregarDados();
 </script>
 
