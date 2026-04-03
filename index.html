@@ -18,6 +18,11 @@
       padding: 15px;
       border-radius: 10px;
     }
+
+    .price {
+      font-size: 18px;
+      color: #38bdf8;
+    }
   </style>
 </head>
 <body>
@@ -43,15 +48,18 @@ async function carregarDados() {
     container.innerHTML = "";
 
     lista.forEach(item => {
-      const nome = item.fuel || item.name || "Combustível";
-      const preco = item.value || item.price || "N/A";
+      const nome = item.fuel_name;
+      const preco = item.avg_price_eur;
+      const min = item.min_price_eur;
+      const max = item.max_price_eur;
 
       const div = document.createElement("div");
       div.className = "card";
 
       div.innerHTML = `
         <h2>${nome}</h2>
-        <p>${preco} €</p>
+        <p class="price">Média: ${preco} €</p>
+        <p>Mín: ${min} € | Máx: ${max} €</p>
       `;
 
       container.appendChild(div);
