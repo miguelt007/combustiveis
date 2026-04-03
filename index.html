@@ -7,33 +7,59 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
+    /* =========================
+       🎨 THEME SYSTEM
+    ========================= */
+
     body {
       margin: 0;
       font-family: Arial;
+      text-align: center;
+      transition: 0.3s;
+    }
+
+    body.dark {
       background: linear-gradient(135deg, #0f172a, #020617);
       color: white;
-      text-align: center;
+    }
+
+    body.light {
+      background: #f3f4f6;
+      color: #111;
     }
 
     h1 {
       margin: 20px 10px 5px;
     }
 
+    button {
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-weight: bold;
+      cursor: pointer;
+      margin: 5px;
+      border: none;
+    }
+
+    .btn-blue {
+      background: #38bdf8;
+      color: black;
+    }
+
+    .btn-theme {
+      background: #111827;
+      color: white;
+    }
+
+    body.light .btn-theme {
+      background: #e5e7eb;
+      color: #111;
+    }
+
     #update {
       font-size: 14px;
       opacity: 0.7;
       margin-bottom: 10px;
-    }
-
-    button {
-      background: #38bdf8;
-      border: none;
-      padding: 12px 22px;
-      border-radius: 10px;
-      color: black;
-      font-weight: bold;
-      cursor: pointer;
-      margin-bottom: 15px;
     }
 
     #container {
@@ -47,9 +73,18 @@
       margin: 12px;
       padding: 20px;
       border-radius: 16px;
+      transition: 0.3s;
+    }
+
+    body.dark .card {
       background: rgba(30, 41, 59, 0.7);
-      backdrop-filter: blur(10px);
-      box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+      color: white;
+    }
+
+    body.light .card {
+      background: white;
+      color: #111;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.1);
     }
 
     .icon {
@@ -58,43 +93,44 @@
       margin: 0 auto 10px;
     }
 
-    h3 {
-      margin: 10px 0;
-    }
-
     .price {
       font-size: 26px;
       font-weight: bold;
-      margin: 10px 0;
       color: #38bdf8;
     }
 
     .min { color: #4ade80; }
     .max { color: #f87171; }
 
-    #status {
-      margin: 10px;
-      opacity: 0.7;
-    }
-
     canvas {
       width: 95% !important;
       max-width: 1600px;
       height: 520px !important;
-      background: rgba(30, 41, 59, 0.35);
       border-radius: 16px;
       padding: 10px;
+    }
+
+    body.dark canvas {
+      background: rgba(30, 41, 59, 0.35);
+    }
+
+    body.light canvas {
+      background: white;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.1);
     }
   </style>
 </head>
 
-<body>
+<body class="dark">
 
 <h1>⛽ Combustíveis Dashboard</h1>
 
-<div id="update"></div>
-<button onclick="carregarDados()">🔄 Atualizar</button>
+<div>
+  <button class="btn-blue" onclick="carregarDados()">🔄 Atualizar</button>
+  <button class="btn-theme" onclick="toggleTheme()">🌙 Modo</button>
+</div>
 
+<div id="update"></div>
 <div id="status">A carregar...</div>
 
 <div id="container"></div>
@@ -105,64 +141,49 @@
 const API_URL = "https://corsproxy.io/?https://api.apiaberta.pt/v1/fuel/prices";
 
 /* =========================
-   🎨 SVG ICONS
+   🌙 THEME SYSTEM
+========================= */
+
+function setTheme(theme) {
+  document.body.className = theme;
+  localStorage.setItem("theme", theme);
+}
+
+function toggleTheme() {
+  const current = document.body.classList.contains("dark") ? "dark" : "light";
+  setTheme(current === "dark" ? "light" : "dark");
+}
+
+// carregar tema guardado
+setTheme(localStorage.getItem("theme") || "dark");
+
+/* =========================
+   🎨 SVG ICONS (mantidos simples)
 ========================= */
 
 function iconGasolina() {
-  return `
-  <svg viewBox="0 0 64 64" fill="none">
-    <path d="M20 10h20v44H20z" stroke="white" stroke-width="3"/>
-    <path d="M25 18h10M25 26h10M25 34h10" stroke="#38bdf8" stroke-width="3"/>
-    <path d="M40 14h6v30c0 4-6 4-6 0V14z" stroke="white" stroke-width="3"/>
-  </svg>`;
+  return `<svg viewBox="0 0 64 64"><rect x="20" y="10" width="24" height="44" stroke="currentColor" stroke-width="3"/></svg>`;
 }
 
 function iconGasoleo() {
-  return `
-  <svg viewBox="0 0 64 64" fill="none">
-    <rect x="18" y="10" width="28" height="44" rx="4" stroke="white" stroke-width="3"/>
-    <path d="M22 20h20M22 30h20M22 40h20" stroke="#38bdf8" stroke-width="3"/>
-  </svg>`;
-}
-
-function iconBiodiesel() {
-  return `
-  <svg viewBox="0 0 64 64" fill="none">
-    <path d="M32 10c10 10 16 18 16 26a16 16 0 1 1-32 0c0-8 6-16 16-26z"
-      stroke="#4ade80" stroke-width="3"/>
-  </svg>`;
+  return `<svg viewBox="0 0 64 64"><rect x="18" y="10" width="28" height="44" stroke="currentColor" stroke-width="3"/></svg>`;
 }
 
 function iconGNC() {
-  return `
-  <svg viewBox="0 0 64 64" fill="none">
-    <rect x="20" y="14" width="24" height="36" rx="6" stroke="white" stroke-width="3"/>
-    <path d="M24 22h16M24 30h16" stroke="#38bdf8" stroke-width="3"/>
-    <circle cx="32" cy="50" r="3" fill="#38bdf8"/>
-  </svg>`;
+  return `<svg viewBox="0 0 64 64"><rect x="20" y="14" width="24" height="36" stroke="currentColor" stroke-width="3"/></svg>`;
 }
 
 function iconGNL() {
-  return `
-  <svg viewBox="0 0 64 64" fill="none">
-    <path d="M32 8c8 12 14 20 14 28a14 14 0 1 1-28 0c0-8 6-16 14-28z"
-      stroke="#22d3ee" stroke-width="3"/>
-    <path d="M22 40c6 6 14 6 20 0" stroke="#38bdf8" stroke-width="3"/>
-  </svg>`;
+  return `<svg viewBox="0 0 64 64"><path d="M32 8c8 12 14 20 14 28a14 14 0 1 1-28 0c0-8 6-16 14-28z" stroke="currentColor" stroke-width="3"/></svg>`;
 }
-
-/* ========================= */
 
 function getIcon(nome) {
   nome = nome.toLowerCase();
 
   if (nome.includes("gasolina")) return iconGasolina();
   if (nome.includes("gasóleo") || nome.includes("gasoleo")) return iconGasoleo();
-  if (nome.includes("biodiesel")) return iconBiodiesel();
-
-  // Gases
-  if (nome.includes("gnc") || nome.includes("comprimido")) return iconGNC();
-  if (nome.includes("gnl") || nome.includes("liquefeito")) return iconGNL();
+  if (nome.includes("gnc")) return iconGNC();
+  if (nome.includes("gnl")) return iconGNL();
 
   return iconGasolina();
 }
@@ -209,9 +230,7 @@ async function carregarDados() {
       div.innerHTML = `
         <div class="icon">${getIcon(item.fuel_name)}</div>
         <h3>${item.fuel_name}</h3>
-
         <div class="price">💰 ${item.avg_price_eur} €</div>
-
         <div>
           <span class="min">Min: ${item.min_price_eur} €</span> |
           <span class="max">Máx: ${item.max_price_eur} €</span>
@@ -230,32 +249,20 @@ async function carregarDados() {
       data: {
         labels,
         datasets: [
-          {
-            label: "Mínimo",
-            data: minData,
-            backgroundColor: "#4ade80"
-          },
-          {
-            label: "Média",
-            data: avgData,
-            backgroundColor: "#facc15"
-          },
-          {
-            label: "Máximo",
-            data: maxData,
-            backgroundColor: "#f87171"
-          }
+          { label: "Mínimo", data: minData, backgroundColor: "#4ade80" },
+          { label: "Média", data: avgData, backgroundColor: "#facc15" },
+          { label: "Máximo", data: maxData, backgroundColor: "#f87171" }
         ]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-          legend: { labels: { color: "white" } }
+          legend: { labels: { color: getComputedStyle(document.body).color } }
         },
         scales: {
-          x: { ticks: { color: "white" } },
-          y: { ticks: { color: "white" } }
+          x: { ticks: { color: getComputedStyle(document.body).color } },
+          y: { ticks: { color: getComputedStyle(document.body).color } }
         }
       }
     });
