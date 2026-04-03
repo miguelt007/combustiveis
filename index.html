@@ -43,7 +43,7 @@
     }
 
     .card {
-      width: 300px;
+      width: 280px;
       margin: 12px;
       padding: 20px;
       border-radius: 16px;
@@ -56,6 +56,10 @@
       font-size: 42px;
     }
 
+    h3 {
+      margin: 10px 0;
+    }
+
     .price {
       font-size: 26px;
       font-weight: bold;
@@ -66,15 +70,29 @@
     .min { color: #4ade80; }
     .max { color: #f87171; }
 
-    /* 📊 gráficos maiores */
-    canvas {
-      margin: 20px auto 50px;
-      max-width: 1100px;
+    #status {
+      margin: 10px;
+      opacity: 0.7;
     }
 
+    /* 📊 ÁREA DOS GRÁFICOS (MAIOR QUE OS CARDS) */
     #charts {
-      width: 95%;
-      margin: auto;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 40px;
+      margin-top: 40px;
+      padding-bottom: 60px;
+    }
+
+    canvas {
+      width: 95% !important;
+      max-width: 1600px;
+      height: 520px !important;
+      background: rgba(30, 41, 59, 0.35);
+      border-radius: 16px;
+      padding: 10px;
     }
   </style>
 </head>
@@ -87,11 +105,12 @@
 <button onclick="carregarDados()">🔄 Atualizar</button>
 
 <div id="status">A carregar...</div>
+
 <div id="container"></div>
 
 <div id="charts">
-  <canvas id="graficoAtual" height="140"></canvas>
-  <canvas id="graficoHistorico" height="160"></canvas>
+  <canvas id="graficoAtual"></canvas>
+  <canvas id="graficoHistorico"></canvas>
 </div>
 
 <script>
@@ -136,25 +155,24 @@ async function carregarDados() {
     const avgData = [];
     const maxData = [];
 
-    // 📈 histórico simulado
-    const historicoLabels = ["-4", "-3", "-2", "-1", "Hoje"];
-    const historicoDatasets = [];
+    const histLabels = ["-4", "-3", "-2", "-1", "Hoje"];
+    const histDatasets = [];
 
-    lista.forEach((item, index) => {
+    lista.forEach(item => {
       labels.push(item.fuel_name);
       minData.push(item.min_price_eur);
       avgData.push(item.avg_price_eur);
       maxData.push(item.max_price_eur);
 
-      const icon = getIcon(item.fuel_name);
-
       const div = document.createElement("div");
       div.className = "card";
 
       div.innerHTML = `
-        <div class="icon">${icon}</div>
+        <div class="icon">${getIcon(item.fuel_name)}</div>
         <h3>${item.fuel_name}</h3>
+
         <div class="price">💰 ${item.avg_price_eur} €</div>
+
         <div>
           <span class="min">Min: ${item.min_price_eur} €</span> |
           <span class="max">Máx: ${item.max_price_eur} €</span>
@@ -163,9 +181,9 @@ async function carregarDados() {
 
       container.appendChild(div);
 
-      // 📈 gerar “tendência” simulada
       const base = item.avg_price_eur;
-      historicoDatasets.push({
+
+      histDatasets.push({
         label: item.fuel_name,
         data: [
           base - 0.05,
@@ -179,7 +197,7 @@ async function carregarDados() {
       });
     });
 
-    // 📊 GRÁFICO ATUAL (MAIOR)
+    // 📊 GRÁFICO ATUAL (GRANDE)
     if (chartAtual) chartAtual.destroy();
 
     const ctx1 = document.getElementById("graficoAtual").getContext("2d");
@@ -208,6 +226,7 @@ async function carregarDados() {
       },
       options: {
         responsive: true,
+        maintainAspectRatio: false,
         plugins: {
           legend: { labels: { color: "white" } }
         },
@@ -218,7 +237,7 @@ async function carregarDados() {
       }
     });
 
-    // 📈 GRÁFICO HISTÓRICO
+    // 📈 GRÁFICO HISTÓRICO (GRANDE)
     if (chartHistorico) chartHistorico.destroy();
 
     const ctx2 = document.getElementById("graficoHistorico").getContext("2d");
@@ -226,11 +245,12 @@ async function carregarDados() {
     chartHistorico = new Chart(ctx2, {
       type: "line",
       data: {
-        labels: historicoLabels,
-        datasets: historicoDatasets
+        labels: histLabels,
+        datasets: histDatasets
       },
       options: {
         responsive: true,
+        maintainAspectRatio: false,
         plugins: {
           legend: { labels: { color: "white" } }
         },
