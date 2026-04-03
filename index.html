@@ -3,57 +3,108 @@
 <head>
   <meta charset="UTF-8">
   <title>Preços de Combustíveis</title>
+
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #111;
-      color: #fff;
+      background: #0f172a;
+      color: #e2e8f0;
       text-align: center;
+      margin: 0;
+      padding: 0;
     }
+
     h1 {
+      margin: 20px 0;
+    }
+
+    #container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      padding: 10px;
+    }
+
+    .card {
+      background: #1e293b;
+      margin: 10px;
+      padding: 20px;
+      border-radius: 12px;
+      width: 250px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      transition: transform 0.2s;
+    }
+
+    .card:hover {
+      transform: scale(1.05);
+    }
+
+    .price {
+      font-size: 1.5em;
+      color: #38bdf8;
+    }
+
+    .error {
+      color: #f87171;
       margin-top: 20px;
     }
-    .card {
-      background: #1e1e1e;
-      margin: 10px auto;
-      padding: 15px;
-      border-radius: 10px;
-      max-width: 400px;
+
+    .loading {
+      margin-top: 20px;
+      font-style: italic;
     }
   </style>
 </head>
 <body>
 
   <h1>⛽ Preços de Combustíveis em Portugal</h1>
+
+  <div id="status" class="loading">A carregar dados...</div>
   <div id="container"></div>
 
   <script>
-    const API_URL = "https://api.apiaberta.pt/v1/fuel/prices";
+    // Proxy para evitar CORS
+    const API_URL = "https://api.allorigins.win/raw?url=https://api.apiaberta.pt/v1/fuel/prices";
 
     async function carregarDados() {
+      const status = document.getElementById("status");
+      const container = document.getElementById("container");
+
       try {
         const resposta = await fetch(API_URL);
         const dados = await resposta.json();
 
-        const container = document.getElementById("container");
+        console.log("Resposta da API:", dados);
+
+        // Algumas APIs usam "data", outras não
+        const lista = dados.data || dados;
+
+        if (!Array.isArray(lista)) {
+          throw new Error("Formato inesperado da API");
+        }
+
+        status.style.display = "none";
         container.innerHTML = "";
 
-        dados.forEach(item => {
+        lista.forEach(item => {
           const div = document.createElement("div");
           div.className = "card";
 
           div.innerHTML = `
-            <h2>${item.name}</h2>
-            <p>Preço: ${item.price} €</p>
+            <h2>${item.name || "Combustível"}</h2>
+            <p class="price">${item.price ? item.price + " €" : "N/A"}</p>
           `;
 
           container.appendChild(div);
         });
 
       } catch (erro) {
-        console.error("Erro ao carregar API:", erro);
-        document.getElementById("container").innerHTML =
-          "<p>Erro ao carregar dados 😢</p>";
+        console.error("Erro real:", erro);
+
+        status.className = "error";
+        status.innerHTML = "Erro ao carregar dados 😢<br>Abre o console (F12)";
+
+        container.innerHTML = "";
       }
     }
 
