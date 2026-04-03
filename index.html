@@ -6,9 +6,9 @@
 
   <style>
     body {
-      font-family: Arial, sans-serif;
+      font-family: Arial;
       background: #0f172a;
-      color: #e2e8f0;
+      color: white;
       text-align: center;
     }
 
@@ -37,20 +37,21 @@ async function carregarDados() {
     const res = await fetch(API_URL);
     const dados = await res.json();
 
-    console.log(dados);
-
     const lista = dados.data || dados;
 
     status.innerHTML = "";
     container.innerHTML = "";
 
     lista.forEach(item => {
+      const nome = item.fuel || item.name || "Combustível";
+      const preco = item.value || item.price || "N/A";
+
       const div = document.createElement("div");
       div.className = "card";
 
       div.innerHTML = `
-        <h2>${item.name || "Combustível"}</h2>
-        <p>${item.price || "N/A"} €</p>
+        <h2>${nome}</h2>
+        <p>${preco} €</p>
       `;
 
       container.appendChild(div);
@@ -58,7 +59,6 @@ async function carregarDados() {
 
   } catch (e) {
     status.innerHTML = "Erro ao carregar dados 😢";
-    console.error(e);
   }
 }
 
