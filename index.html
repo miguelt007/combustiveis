@@ -53,7 +53,9 @@
     }
 
     .icon {
-      font-size: 42px;
+      width: 46px;
+      height: 46px;
+      margin: 0 auto 10px;
     }
 
     h3 {
@@ -73,15 +75,6 @@
     #status {
       margin: 10px;
       opacity: 0.7;
-    }
-
-    /* 📊 GRÁFICO GRANDE */
-    #charts {
-      width: 100%;
-      display: flex;
-      justify-content: center;
-      margin-top: 40px;
-      padding-bottom: 60px;
     }
 
     canvas {
@@ -106,21 +99,72 @@
 
 <div id="container"></div>
 
-<div id="charts">
-  <canvas id="graficoAtual"></canvas>
-</div>
+<canvas id="graficoAtual"></canvas>
 
 <script>
 const API_URL = "https://corsproxy.io/?https://api.apiaberta.pt/v1/fuel/prices";
 
+/* =========================
+   🎨 SVG ICONS
+========================= */
+
+function iconGasolina() {
+  return `
+  <svg viewBox="0 0 64 64" fill="none">
+    <path d="M20 10h20v44H20z" stroke="white" stroke-width="3"/>
+    <path d="M25 18h10M25 26h10M25 34h10" stroke="#38bdf8" stroke-width="3"/>
+    <path d="M40 14h6v30c0 4-6 4-6 0V14z" stroke="white" stroke-width="3"/>
+  </svg>`;
+}
+
+function iconGasoleo() {
+  return `
+  <svg viewBox="0 0 64 64" fill="none">
+    <rect x="18" y="10" width="28" height="44" rx="4" stroke="white" stroke-width="3"/>
+    <path d="M22 20h20M22 30h20M22 40h20" stroke="#38bdf8" stroke-width="3"/>
+  </svg>`;
+}
+
+function iconBiodiesel() {
+  return `
+  <svg viewBox="0 0 64 64" fill="none">
+    <path d="M32 10c10 10 16 18 16 26a16 16 0 1 1-32 0c0-8 6-16 16-26z"
+      stroke="#4ade80" stroke-width="3"/>
+  </svg>`;
+}
+
+function iconGNC() {
+  return `
+  <svg viewBox="0 0 64 64" fill="none">
+    <rect x="20" y="14" width="24" height="36" rx="6" stroke="white" stroke-width="3"/>
+    <path d="M24 22h16M24 30h16" stroke="#38bdf8" stroke-width="3"/>
+    <circle cx="32" cy="50" r="3" fill="#38bdf8"/>
+  </svg>`;
+}
+
+function iconGNL() {
+  return `
+  <svg viewBox="0 0 64 64" fill="none">
+    <path d="M32 8c8 12 14 20 14 28a14 14 0 1 1-28 0c0-8 6-16 14-28z"
+      stroke="#22d3ee" stroke-width="3"/>
+    <path d="M22 40c6 6 14 6 20 0" stroke="#38bdf8" stroke-width="3"/>
+  </svg>`;
+}
+
+/* ========================= */
+
 function getIcon(nome) {
   nome = nome.toLowerCase();
 
-  if (nome.includes("gasolina")) return "⛽";
-  if (nome.includes("gasóleo") || nome.includes("gasoleo")) return "🚗";
-  if (nome.includes("biodiesel")) return "🌱";
+  if (nome.includes("gasolina")) return iconGasolina();
+  if (nome.includes("gasóleo") || nome.includes("gasoleo")) return iconGasoleo();
+  if (nome.includes("biodiesel")) return iconBiodiesel();
 
-  return "⛽";
+  // Gases
+  if (nome.includes("gnc") || nome.includes("comprimido")) return iconGNC();
+  if (nome.includes("gnl") || nome.includes("liquefeito")) return iconGNL();
+
+  return iconGasolina();
 }
 
 function formatarData(dataISO) {
